@@ -22,7 +22,7 @@ async function run() {
         const database = client.db("RoyalTravelTourism");
         const packages = database.collection("TourPackages");
         const orders = database.collection("AllOrders");
-        
+
         //GET API
         app.get('/tourPackages', async (req, res) => {
             const cursor = packages.find({});
@@ -38,6 +38,24 @@ async function run() {
             res.send(tourPackage)
         })
 
+
+        //update 
+        app.put('/manageAllOrder/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedOrder = req.body;
+            console.log(updatedOrder)
+            const filter = { _id: ObjectId(id) };
+            const option = { upsert: true }
+            const updateDoc = {
+                $set: {
+                    status: updatedOrder.status
+                }
+            }
+
+            const result = await orders.updateOne(filter, updateDoc, option)
+            res.send(result)
+        })
+
         //POST API
 
         app.post("/placeOrder", async (req, res) => {
@@ -46,7 +64,15 @@ async function run() {
             res.send(result);
         });
 
-        //POST API
+        //All order
+        app.get('/manageAllOrder', async (req, res) => {
+            const cursor = orders.find({});
+            const allOrders = await cursor.toArray();
+            console.log(allOrders);
+            res.send(allOrders);
+        })
+
+        //Add tour
         app.post('/addTours', async (req, res) => {
             const result = await packages.insertOne(req.body)
             res.send(result)
@@ -59,6 +85,7 @@ async function run() {
             }).toArray();
             res.send(result);
         });
+
         //delete order
         app.delete("/myOrder/:id", async (req, res) => {
             const id = req.params.id;
